@@ -1,5 +1,2 @@
-pip3 install flask
-pip3 install Flask-PyMongo
-pip3 install flask-restx
-pip3 install werkzeug==1.0.0
-pip3 install -U cachelib
+pip install flask
+pip install flasgger
