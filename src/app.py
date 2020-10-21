@@ -1,7 +1,11 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify,render_template
+from flask_socketio import SocketIO,send
 from flasgger import Swagger
 
 app = Flask(__name__)
+app.config['SECRET_KEY']='secret'
+socketio=SocketIO(app)
+
 template = {
   "swagger": "2.0",
   "info": {
@@ -25,6 +29,10 @@ template = {
   "operationId": "getmyData"
 }
 swagger = Swagger(app,template=template)
+
+@app.route('/')
+def index():
+  return render_template('index.html')
 
 @app.route('/colors/<palette>/')
 def colors(palette):
@@ -67,5 +75,11 @@ def colors(palette):
 
     return jsonify(result)
 
+@socketio.on('message')
+def handleMessage(msg):
+  print("Mensaje: "+msg)
+  #send(msg,broadcast=False)
+  send(msg,broadcast=True)
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app,debug=True)
