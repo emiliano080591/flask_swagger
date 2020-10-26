@@ -1,10 +1,11 @@
-from flask import Flask, jsonify,render_template
-from flask_socketio import SocketIO,send
+from flask import Flask, jsonify,render_template,request
+from flask_socketio import SocketIO,emit,disconnect
 from flasgger import Swagger
 
+async_mode=None
 app = Flask(__name__)
 app.config['SECRET_KEY']='secret'
-socketio=SocketIO(app)
+socketio=SocketIO(app,async_mode=async_mode)
 
 template = {
   "swagger": "2.0",
@@ -32,7 +33,7 @@ swagger = Swagger(app,template=template)
 
 @app.route('/')
 def index():
-  return render_template('index.html')
+  return render_template('index.html',async_mode=socketio.async_mode)
 
 @app.route('/colors/<palette>/')
 def colors(palette):
@@ -75,11 +76,36 @@ def colors(palette):
 
     return jsonify(result)
 
-@socketio.on('message')
-def handleMessage(msg):
-  print("Mensaje: "+msg)
-  #send(msg,broadcast=False)
-  send(msg,broadcast=True)
+"""
+Métodos que manejan las conexiones de websockets con socket io
+"""
+
+#Método que recibe la primera conexion con el cliente
+@socketio.on('connect', namespace='/test')
+def test_connect():
+  #print(request.sid)
+  emit('my response', {'data': 'Connected'})
+
+#Método que responde a un cliente en particular
+@socketio.on('my event', namespace='/test')
+def test_message(message):
+  emit('my response', {'data': message['data']})
+
+#Método que responde a todos los clientes(broadcast)
+@socketio.on('my broadcast event', namespace='/test')
+def test_message(message):
+  emit('my response', {'data': message['data']}, broadcast=True)
+
+#Método que desconecta a un cliente
+@socketio.on('disconnect', namespace='/test')
+def test_disconnect():
+  disconnect('/test')
+  print('Client disconnected ')
+
+#Método que muestra los errores de ejecucion de socket io
+@socketio.on_error(namespace='/test')
+def chat_error_handler(e):
+    print('An error has occurred: ' + str(e))
 
 if __name__ == '__main__':
     socketio.run(app,debug=True)

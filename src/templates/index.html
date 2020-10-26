@@ -9,19 +9,52 @@
 </head>
 <body>
     <h1>Python & SocketIO</h1>
-    <ul id="messages"></ul>
-    <input type="text" id="myMessage">
-    <button type="button" id="send">Send</button>
+    <table>
+        <tr>
+            <td>Mensajes</td>
+        </tr>
+        <tr>
+            <td><ul id="messages"></ul></td>
+        </tr>
+    </table>
+    <hr>
+    <table>
+        <tr>
+            <td><input type="text" id="myMessage"></td>
+            <td><button type="button" id="send">Send</button></td>
+        </tr>
+        <tr>
+            <td><input type="text" id="myMessage_broadcast"></td>
+            <td><button type="button" id="send_broadcast">Send Broadcast</button></td>
+        </tr>
+    </table>
+    <button type="button" id="btn_disconnect">Disconnect</button>
+    
+    
     <script>
-        const socket=io();
-        //socket.emit('message','Conectando..');
-        socket.on('message',function(msg){
-            $('#messages').append('<li>'+msg+'</li>');
+        const socket=io('http://127.0.0.1:5000/test');
+
+        socket.on('my response',function(msg){
+            $('#messages').append('<li>'+msg.data+'</li>');
         });
         
         $('#send').on('click',function() {
-            socket.send($('#myMessage').val());
+            socket.emit('my event', {data: $('#myMessage').val()});
             $('#myMessage').val('')
+            return false;
+            
+        });
+
+        $('#send_broadcast').on('click',function() {
+            socket.emit('my broadcast event', {data: $('#myMessage_broadcast').val()});
+            $('#myMessage_broadcast').val('')
+            return false;
+        });
+        
+        $('#btn_disconnect').on('click',function() {
+            console.log('btn desconectar');
+            socket.emit('disconnect');
+            socket.disconnect();
         });
         
     </script>
