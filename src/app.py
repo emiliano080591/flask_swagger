@@ -1,6 +1,6 @@
 from flask import Flask, jsonify,render_template,request
 from flask_socketio import SocketIO,emit,disconnect
-from flasgger import Swagger
+from flasgger import Swagger,swag_from
 
 async_mode=None
 app = Flask(__name__)
@@ -36,35 +36,8 @@ def index():
   return render_template('index.html',async_mode=socketio.async_mode)
 
 @app.route('/colors/<palette>/')
+@swag_from('colors.yml')
 def colors(palette):
-    """Example endpoint returning a list of colors by palette
-    This is using docstrings for specifications.
-    ---
-    parameters:
-      - name: palette
-        in: path
-        type: string
-        enum: ['all', 'rgb', 'cmyk']
-        required: true
-        default: all
-    definitions:
-      Palette:
-        type: object
-        properties:
-          palette_name:
-            type: array
-            items:
-              $ref: '#/definitions/Color'
-      Color:
-        type: string
-    responses:
-      200:
-        description: A list of colors (may be filtered by palette)
-        schema:
-          $ref: '#/definitions/Palette'
-        examples:
-          rgb: ['red', 'green', 'blue']
-    """
     all_colors = {
         'cmyk': ['cian', 'magenta', 'yellow', 'black'],
         'rgb': ['red', 'green', 'blue']
